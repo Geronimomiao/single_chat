@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <h2 style="text-align: center">激情聊天</h2>
+            <div class="form-group">
+                <label for="s_nickname">你是谁：</label>
+                <input class="form-control" type="text" id="s_nickname">
+                <label for="s_phone">你的手机号：</label>
+                <input class="form-control" type="text" id="s_phone">
+            </div>
+            <div class="form-group">
+                <label for="r_nickname">发送谁：</label>
+                <input class="form-control" type="text" id="r_nickname">
+                <label for="r_phone">接收者的手机号：</label>
+                <input class="form-control" type="text" id="r_phone">
+            </div>
+            <button id="create_ws" onclick="go_to()" class="btn btn-warning">创建ws连接</button>
+            <div style="width: 100%; height: 300px; border: double;background-color: cadetblue" id="chat_window" class="input-group">
+            </div>
+
+             <div class="input-group">
+                  <input type="text" class="form-control" placeholder="" id="send_msg">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="btn_send">发送消息</button>
+                  </span>
+                </div>
+              </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="application/javascript">
+    var ws_url = "ws://127.0.0.1:5000/ws/";
+    var ws = null;
+    function go_to() {
+        var s_phone = document.getElementById('s_phone');
+        ws = new WebSocket(ws_url + s_phone.value);
+        ws.onmessage = function (serv_msg) {
+            msg = JSON.parse(serv_msg.data);
+            //console.log(serv_msg.data);
+            create_chart('y', msg)
+        };
+    }
+    function create_chart(self, content) {
+        if (self == "w") {
+            self = "right";
+            var spantag = document.createElement("span");
+            spantag.innerText = content.send_msg;
+            var spantag1 = document.createElement("span");
+            spantag1.innerText = ':我';
+        } else {
+            self = "left";
+            var spantag = document.createElement("span");
+            spantag.innerText = content.s_nickname + ':';
+
+            var spantag1 = document.createElement("span");
+            spantag1.innerText = content.send_msg;
+
+        }
+        var divtag = document.createElement("div");
+        divtag.style = "text-align:" + self;
+        divtag.appendChild(spantag);
+        divtag.appendChild(spantag1);
+        var char_window = document.getElementById('chat_window');
+        char_window.appendChild(divtag);
+
+    }
+
+    document.getElementById("btn_send").addEventListener("click", function () {
+        var send_msg = document.getElementById("send_msg");
+        var s_nickname = document.getElementById("s_nickname");
+        var s_phone = document.getElementById("s_phone");
+        var r_nickname = document.getElementById("r_nickname");
+        var r_phone = document.getElementById("r_phone");
+        send_msg_json = {
+            send_msg: send_msg.value,
+            s_nickname: s_nickname.value,
+            s_phone: s_phone.value,
+            r_nickname: r_nickname.value,
+            r_phone: r_phone.value,
+        };
+
+        ws.send(JSON.stringify(send_msg_json));
+        var s_msg = {send_msg: send_msg.value};
+        create_chart('w', s_msg);
+        send_msg.value = '';
+    })
+
+</script>
+</body>
+</html>
